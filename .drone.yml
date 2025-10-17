@@ -11,20 +11,16 @@ steps:
       <<: *hugo_env
     commands:
       - hugo --baseURL $BASE_URL
-#push the build on s3 bucket
-  - name: push-to-s3
-    image: plugins/s3
+  - name: upload-to-s3
+    image: amazon/aws-cli
     environment:
-      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
-      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
-      AWS_SESSION_TOKEN: ${S3_SESSION_TOKEN}
-    settings:
-      bucket: deploy-landing
-      acces_key: ${S3_ACCESS_KEY}
-      secret_key: ${S3_SECRET_KEY}
-      session_token: ${S3_SESSION_TOKEN}
-      endpoint: s3.amazonaws.com
-      path: public/
-      acl: public-read
-      mime_type: auto
-      cache_control: max-age=31536000, public
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET: deploy-landing
+    commands:
+      - aws s3 sync public/ s3://deploy-landing/ --delete
