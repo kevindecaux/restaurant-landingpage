@@ -11,4 +11,15 @@ steps:
       <<: *hugo_env
     commands:
       - hugo --baseURL $BASE_URL
-#test
+#push the build on s3 bucket
+  - name: push-to-s3
+    image: plugins/s3
+    environment:
+      <<: *hugo_env
+    settings:
+      bucket: deploy-landing
+      endpoint: s3.amazonaws.com
+      path: public/
+      acl: public-read
+      mime_type: auto
+      cache_control: max-age=31536000, public
