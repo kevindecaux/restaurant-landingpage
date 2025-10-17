@@ -19,15 +19,13 @@ trigger:
     - master
 ---
 kind: pipeline
-name: build on maste
+name: build on master
 steps:
   - name: hugo-build
     image: peaceiris/hugo:v0.65.3-mod
-    environment:
-      BASE_URL:
-        from_secret: base_url_stage
+
     commands:
-      - hugo --baseURL ${BASE_URL}
+      - hugo --baseURL https://stage-landing-restau.s3.us-east-1.amazonaws.com/
 
   - name: push-to-staging
     image: amazon/aws-cli
