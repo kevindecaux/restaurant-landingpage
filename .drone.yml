@@ -6,6 +6,7 @@ steps:
     image: peaceiris/hugo:v0.65.3-mod
     commands:
       - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+
   - name: push-to-staging
     image: amazon/aws-cli
     environment:
@@ -17,7 +18,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp site-${DRONE_TAG}.zip s3://stage-landing-restau/
+      - aws s3 sync public/ s3://deploy-stage-restau/ --delete
 trigger:
   event:
     - push
