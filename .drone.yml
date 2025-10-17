@@ -6,6 +6,18 @@ steps:
     image: peaceiris/hugo:v0.65.3-mod
     commands:
       - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+  - name: push-to-staging
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+    commands:
+      - aws s3 cp site-${DRONE_TAG}.zip s3://stage-landing-restau/
 trigger:
   event:
     - push
@@ -36,7 +48,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp site-${DRONE_TAG}.zip s3://deploy-landing/releases/site-${DRONE_TAG}.zip
+      - aws s3 sync public/ s3://deploy-landing/ --delete
 trigger:
   event:
     - tag
@@ -45,10 +57,20 @@ trigger:
 kind: pipeline
 name: deploy
 steps:
-  - name: hugo-build
-    image: peaceiris/hugo:v0.65.3-mod
+  - name: download-zip-from-s3
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
     commands:
-      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+      - aws s3 cp s3://deploy-landing/releases/site-${DRONE_TAG}.zip .
+      - unzip site-${DRONE_TAG}.zip
+      - rm -f site-${DRONE_TAG}.zipr
 
   - name: upload-to-s3
     image: amazon/aws-cli
