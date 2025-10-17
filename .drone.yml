@@ -48,6 +48,7 @@ steps:
         else
           zip -r site-pprd-${DRONE_COMMIT_SHA:0:8}.zip public/
         fi
+      - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
     when:
       event: [push, tag]
       branch: master
@@ -125,7 +126,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - apk add --no-cache zip
+      - apt-get update && apt-get install -y zip
       - aws s3 cp s3://release-landing/production/site-prod-${DRONE_TAG}.zip .
       - unzip site-prod-${DRONE_TAG}.zip
       - rm -f site-prod-${DRONE_TAG}.zip
@@ -160,7 +161,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - apk add --no-cache zip
+      - apt-get update && apt-get install -y zip
       - aws s3 cp s3://release-landing/stage/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip .
       - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
       - rm -f site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
