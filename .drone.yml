@@ -44,9 +44,9 @@ steps:
       - apk add --no-cache zip
       - |
         if [ "${DRONE_TAG}" != "" ]; then
-          zip -r restaurant-build-prod-${DRONE_TAG}.zip public/
+          zip -r site-prod-${DRONE_TAG}.zip public/
         else
-          zip -r restaurant-build-preprod-${DRONE_COMMIT_SHA:0:8}.zip public/
+          zip -r site-pprd-${DRONE_COMMIT_SHA:0:8}.zip public/
         fi
     when:
       event: [push, tag]
@@ -81,7 +81,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp site-${DRONE_COMMIT_SHA:0:8}.zip s3://release-landing/stage/site-${DRONE_COMMIT_SHA:0:8}.zip
+      - aws s3 cp site-pprd-${DRONE_COMMIT_SHA:0:8}.zip s3://release-landing/stage/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
     when:
       event: push
       branch: master
@@ -99,7 +99,7 @@ steps:
       S3_BUCKET: release-landing
       S3_REGION: us-east-1
     commands:
-      - aws s3 cp site-${DRONE_TAG}.zip s3://release-landing/production/site-${DRONE_TAG}.zip
+      - aws s3 cp site-prod-${DRONE_TAG}.zip s3://release-landing/production/site-prod-${DRONE_TAG}.zip
     when:
       event: tag
       branch: master
@@ -125,9 +125,9 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp s3://deploy-landing/releases/site-${DRONE_TAG}.zip .
-      - unzip site-${DRONE_TAG}.zip
-      - rm -f site-${DRONE_TAG}.zipr
+      - aws s3 cp s3://deploy-landing/releases/site-prod-${DRONE_TAG}.zip .
+      - unzip site-prod-${DRONE_TAG}.zip
+      - rm -f site-prod-${DRONE_TAG}.zip
     when:
       event: promote
       target: production
@@ -159,9 +159,9 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp s3://deploy-landing/releases/site-${DRONE_TAG}.zip .
-      - unzip site-${DRONE_TAG}.zip
-      - rm -f site-${DRONE_TAG}.zip
+      - aws s3 cp s3://deploy-landing/releases/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip .
+      - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
+      - rm -f site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
     when:
       event: promote
       target: stage
