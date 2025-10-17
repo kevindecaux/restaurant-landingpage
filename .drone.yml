@@ -1,16 +1,55 @@
 ---
-hugo_env: &hugo_env
-   BASE_URL: https://${DRONE_REPO_OWNER,,}.github.io/${DRONE_REPO_NAME}/
-#t
 kind: pipeline
-name: hugo-website
+name: build
 steps:
   - name: hugo-build
     image: peaceiris/hugo:v0.65.3-mod
-    environment:
-      <<: *hugo_env
     commands:
       - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+trigger:
+  event:
+    - push
+
+---
+kind: pipeline
+name: release
+steps:
+  - name: hugo-build
+    image: peaceiris/hugo:v0.65.3-mod
+    commands:
+      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+
+  - name: zip-artifact
+    image: alpine:3.20
+    commands:
+      - apk add --no-cache zip
+      - cd public && zip -r ../site-${DRONE_TAG}.zip .
+
+  - name: upload-zip-to-s3
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+    commands:
+      - aws s3 cp site-${DRONE_TAG}.zip s3://deploy-landing/releases/site-${DRONE_TAG}.zip
+trigger:
+  event:
+    - tag
+
+---
+kind: pipeline
+name: deploy
+steps:
+  - name: hugo-build
+    image: peaceiris/hugo:v0.65.3-mod
+    commands:
+      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+
   - name: upload-to-s3
     image: amazon/aws-cli
     environment:
@@ -21,6 +60,10 @@ steps:
       AWS_SESSION_TOKEN:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
-      S3_BUCKET: deploy-landing
     commands:
       - aws s3 sync public/ s3://deploy-landing/ --delete
+trigger:
+  event:
+    - promote
+  target:
+    - production
