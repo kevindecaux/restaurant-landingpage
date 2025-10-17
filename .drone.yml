@@ -63,7 +63,7 @@ trigger:
     - push
   branch:
     - master 
-#test mastere2
+#test mastere22
 ---
 kind: pipeline
 name: release
