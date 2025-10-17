@@ -7,6 +7,18 @@ steps:
     commands:
       - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
 
+trigger:
+  event:
+    - push
+---
+kind: pipeline
+name: build on maste
+steps:
+  - name: hugo-build
+    image: peaceiris/hugo:v0.65.3-mod
+    commands:
+      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+
   - name: push-to-staging
     image: amazon/aws-cli
     environment:
@@ -22,6 +34,8 @@ steps:
 trigger:
   event:
     - push
+  ref:
+    - master
 
 ---
 kind: pipeline
