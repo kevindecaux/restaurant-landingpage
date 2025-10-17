@@ -159,6 +159,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
+      - apk add --no-cache zip
       - aws s3 cp s3://release-landing/stage/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip .
       - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
       - rm -f site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
