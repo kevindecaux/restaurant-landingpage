@@ -99,7 +99,7 @@ steps:
       S3_BUCKET: release-landing
       S3_REGION: us-east-1
     commands:
-      - aws s3 cp site-${DRONE_COMMIT_SHA:0:8}.zip s3://release-landing/production/site-${DRONE_COMMIT_SHA:0:8}.zip
+      - aws s3 cp site-${DRONE_TAG}.zip s3://release-landing/production/site-${DRONE_TAG}.zip
     when:
       event: tag
       branch: master
