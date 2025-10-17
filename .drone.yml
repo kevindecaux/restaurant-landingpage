@@ -127,7 +127,7 @@ steps:
     commands:
       - yum install -y unzip
       - aws s3 cp s3://release-landing/production/site-prod-${DRONE_TAG}.zip .
-      - unzip site-prod-${DRONE_TAG}.zip -d public/
+      - unzip site-prod-${DRONE_TAG}.zip 
       - rm -f site-prod-${DRONE_TAG}.zip
     when:
       event: promote
