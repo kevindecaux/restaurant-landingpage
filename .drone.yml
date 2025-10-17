@@ -10,7 +10,7 @@ steps:
     environment:
       <<: *hugo_env
     commands:
-      - hugo --baseURL $BASE_URL
+      - hugo --baseURL from_secret: base_url
   - name: upload-to-s3
     image: amazon/aws-cli
     environment:
