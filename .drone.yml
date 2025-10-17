@@ -48,7 +48,6 @@ steps:
         else
           zip -r site-pprd-${DRONE_COMMIT_SHA:0:8}.zip public/
         fi
-      - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
     when:
       event: [push, tag]
       branch: master
