@@ -6,11 +6,11 @@ kind: pipeline
 name: build
 steps:
   - name: hugo-build
+    image: peaceiris/hugo:v0.65.3-mod
     environment:
       <<: *hugo_env
-    image: peaceiris/hugo:v0.65.3-mod
     commands:
-      - hugo --baseURL ${BASE_URL}
+      - hugo --baseURL $BASE_URL
 
 trigger:
   event:
