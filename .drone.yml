@@ -11,3 +11,4 @@ steps:
       <<: *hugo_env
     commands:
       - hugo --baseURL $BASE_URL
+#test
