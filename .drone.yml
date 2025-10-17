@@ -39,7 +39,7 @@ steps:
       AWS_DEFAULT_REGION: us-east-1
     commands:
       - aws s3 cp public/ s3://stage-landing-restau/ --recursive --acl public-read
-
+#tet
   - name: zip-artifact
     image: alpine:3.20
     commands:
