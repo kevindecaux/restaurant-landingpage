@@ -125,7 +125,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp s3://deploy-landing/releases/site-prod-${DRONE_TAG}.zip .
+      - aws s3 cp s3://release-landing/production/site-prod-${DRONE_TAG}.zip .
       - unzip site-prod-${DRONE_TAG}.zip
       - rm -f site-prod-${DRONE_TAG}.zip
     when:
@@ -159,7 +159,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp s3://deploy-landing/releases/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip .
+      - aws s3 cp s3://release-landing/stage/site-pprd-${DRONE_COMMIT_SHA:0:8}.zip .
       - unzip site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
       - rm -f site-pprd-${DRONE_COMMIT_SHA:0:8}.zip
     when:
