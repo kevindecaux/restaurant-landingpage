@@ -21,11 +21,36 @@ trigger:
 kind: pipeline
 name: build on master
 steps:
-  - name: hugo-build
+  - name: hugo-build-stage
     image: peaceiris/hugo:v0.65.3-mod
 
     commands:
       - hugo --baseURL https://stage-landing-restau.s3.us-east-1.amazonaws.com/
+    when:
+      event: push
+      branch: master
+
+  - name: hugo-build-production
+    image: peaceiris/hugo:v0.65.3-mod
+    commands:
+      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
+    when:
+      event: tag
+      branch: master
+
+  - name: create-zip-archive
+    image: alpine:latest
+    commands:
+      - apk add --no-cache zip
+      - |
+        if [ "${DRONE_TAG}" != "" ]; then
+          zip -r restaurant-build-prod-${DRONE_TAG}.zip public/
+        else
+          zip -r restaurant-build-preprod-${DRONE_COMMIT_SHA:0:8}.zip public/
+        fi
+    when:
+      event: [push, tag]
+      branch: master
 
   - name: push-to-staging
     image: amazon/aws-cli
@@ -41,12 +66,9 @@ steps:
       S3_REGION: us-east-1
     commands:
       - aws s3 sync public/ s3://stage-landing-restau/ --delete
-#teteeeed
-  - name: zip-artifact
-    image: alpine:3.20
-    commands:
-      - apk add --no-cache zip
-      - cd public && zip -r ../site-${GIT_SHA}.zip .
+    when:
+      event: push
+      branch: master
 
   - name: upload-zip-to-s3
     image: amazon/aws-cli
@@ -59,46 +81,34 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp site-${GIT_SHA}.zip s3://release-landing/stage/site-${GIT_SHA}.zip
+      - aws s3 cp site-${DRONE_COMMIT_SHA:0:8}.zip s3://release-landing/stage/site-${DRONE_COMMIT_SHA:0:8}.zip
+    when:
+      event: push
+      branch: master
+
+  - name: upload-zip-to-s3-production
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET: release-landing
+      S3_REGION: us-east-1
+    commands:
+      - aws s3 cp site-${DRONE_COMMIT_SHA:0:8}.zip s3://release-landing/production/site-${DRONE_COMMIT_SHA:0:8}.zip
+    when:
+      event: tag
+      branch: master
+
 trigger:
   event:
-    - push
+    - [push, tag]
   branch:
     - master 
-#test mastere222ee
----
-kind: pipeline
-name: release
-steps:
-  - name: hugo-build
-    image: peaceiris/hugo:v0.65.3-mod
-    environment:
-      BASE_URL:
-        from_secret: base_url
-    commands:
-      - hugo --baseURL $BASE_URL
-
-  - name: zip-artifact
-    image: alpine:3.20
-    commands:
-      - apk add --no-cache zip
-      - cd public && zip -r ../site-${DRONE_TAG}.zip .
-
-  - name: upload-zip-to-s3
-    image: amazon/aws-cli
-    environment:
-      AWS_ACCESS_KEY_ID:
-        from_secret: aws_access_key_id
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: aws_secret_access_key
-      AWS_SESSION_TOKEN:
-        from_secret: aws_session_token
-      AWS_DEFAULT_REGION: us-east-1
-    commands:
-      - aws s3 cp site-${DRONE_TAG}.zip s3://release-landing/production/site-${DRONE_TAG}.zip
-trigger:
-  event:
-    - tag
 
 ---
 kind: pipeline
@@ -118,6 +128,9 @@ steps:
       - aws s3 cp s3://deploy-landing/releases/site-${DRONE_TAG}.zip .
       - unzip site-${DRONE_TAG}.zip
       - rm -f site-${DRONE_TAG}.zipr
+    when:
+      event: promote
+      target: production
 
   - name: upload-to-s3
     image: amazon/aws-cli
@@ -131,9 +144,46 @@ steps:
       AWS_DEFAULT_REGION: us-east-1
     commands:
       - aws s3 sync public/ s3://deploy-landing/ --delete
+    when:
+      event: promote
+      target: production
+    
+  - name: download-zip-from-s3-stage
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+    commands:
+      - aws s3 cp s3://deploy-landing/releases/site-${DRONE_TAG}.zip .
+      - unzip site-${DRONE_TAG}.zip
+      - rm -f site-${DRONE_TAG}.zip
+    when:
+      event: promote
+      target: stage
+
+  - name: upload-to-s3-stage
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+    commands:
+      - aws s3 sync public/ s3://deploy-landing/ --delete
+    when:
+      event: promote
+      target: stage
+  
 trigger:
   event:
     - promote
-  target:
-    - production
+ 
 #testbe
