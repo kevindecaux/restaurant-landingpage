@@ -10,7 +10,7 @@ steps:
     environment:
       <<: *hugo_env
     commands:
-      - hugo --baseURL from_secret: base_url
+      - hugo --baseURL https://deploy-landing.s3.us-east-1.amazonaws.com/
   - name: upload-to-s3
     image: amazon/aws-cli
     environment:
