@@ -37,6 +37,8 @@ steps:
       AWS_SESSION_TOKEN:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET: stage-landing-restau
+      S3_REGION: us-east-1
     commands:
       - aws s3 sync public/ s3://stage-landing-restau/ --delete
 #teteeee
