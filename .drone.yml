@@ -40,6 +40,25 @@ steps:
       AWS_DEFAULT_REGION: us-east-1
     commands:
       - aws s3 sync public/ s3://stage-landing-restau/ --delete
+
+  - name: zip-artifact
+    image: alpine:3.20
+    commands:
+      - apk add --no-cache zip
+      - cd public && zip -r ../site-${DRONE_TAG}.zip .
+
+  - name: upload-zip-to-s3
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+      AWS_SESSION_TOKEN:
+        from_secret: aws_session_token
+      AWS_DEFAULT_REGION: us-east-1
+    commands:
+      - aws s3 cp site-${GIT_SHA}.zip s3://stage-landing-restau/site-${DRONE_TAG}.zip
 trigger:
   event:
     - push
