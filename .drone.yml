@@ -65,7 +65,6 @@ steps:
       S3_BUCKET: stage-landing-restau
       S3_REGION: us-east-1
     commands:
-      - yum install -y unzip
       - aws s3 sync public/ s3://stage-landing-restau/ --delete
     when:
       event: push
