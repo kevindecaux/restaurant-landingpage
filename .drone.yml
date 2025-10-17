@@ -1,8 +1,8 @@
+
+---
 hugo_env: &hugo_env
    BASE_URL: https://${DRONE_REPO_OWNER,,}.github.io/${DRONE_REPO_NAME}/
 
-
----
 kind: pipeline
 name: build
 steps:
