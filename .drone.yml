@@ -20,6 +20,9 @@ steps:
       AWS_SESSION_TOKEN: ${S3_SESSION_TOKEN}
     settings:
       bucket: deploy-landing
+      acces_key: ${S3_ACCESS_KEY}
+      secret_key: ${S3_SECRET_KEY}
+      session_token: ${S3_SESSION_TOKEN}
       endpoint: s3.amazonaws.com
       path: public/
       acl: public-read
