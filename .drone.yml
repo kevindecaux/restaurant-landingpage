@@ -38,7 +38,7 @@ steps:
         from_secret: aws_session_token
       AWS_DEFAULT_REGION: us-east-1
     commands:
-      - aws s3 cp public/ s3://stage-landing-restau/ --recursive
+      - aws s3 cp public/ s3://stage-landing-restau/ --recursive --acl public-read
 
   - name: zip-artifact
     image: alpine:3.20
