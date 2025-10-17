@@ -74,7 +74,7 @@ steps:
       BASE_URL:
         from_secret: base_url
     commands:
-      - hugo --baseURL ${BASE_URL}
+      - hugo --baseURL BASE_URL
 
   - name: zip-artifact
     image: alpine:3.20
