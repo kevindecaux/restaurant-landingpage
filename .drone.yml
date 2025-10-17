@@ -62,8 +62,8 @@ trigger:
   event:
     - push
   ref:
-    - master
-
+    - master 
+#test master
 ---
 kind: pipeline
 name: release
